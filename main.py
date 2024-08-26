@@ -2,12 +2,6 @@ from ultralytics import YOLO
 import cv2
 import math 
 import time
-from twilio.rest import Client
-
-account_sid = 'ACff672eae49f22fd45f9de3xxxxxxxxxx'
-auth_token = '4ac07ba6b9ef81b6a3cfd8xxxxxxxxxx'
-client = Client(account_sid, auth_token)
-
 
 # start webcam
 cap = cv2.VideoCapture(0)
@@ -15,7 +9,7 @@ cap.set(3, 640)
 cap.set(4, 480)
 
 # model
-model = YOLO("yolo-Weights/yolov8n.pt")
+model = YOLO("yolo-Weights/yolov8m.pt")
 
 # object classes
 classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
@@ -30,9 +24,16 @@ classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "trai
               "teddy bear", "hair drier", "toothbrush"
               ]
 
+# class name to detect
+target_class_name = "person"
+target_class_index = classNames.index(target_class_name)
 
 while True:
+    # Read the frame from the camera
+    time.sleep(1)
     success, img = cap.read()
+
+    # Pass the image through the model
     results = model(img, stream=True)
 
     # coordinates
@@ -40,37 +41,35 @@ while True:
         boxes = r.boxes
 
         for box in boxes:
-            # bounding box
-            x1, y1, x2, y2 = box.xyxy[0]
-            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2) # convert to int values
-
-            # put box in cam
-            cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
-
-            # confidence
-            confidence = math.ceil((box.conf[0]*100))/100
-            print("Confidence --->",confidence)
-
-            # class name
+         # class index
             cls = int(box.cls[0])
-            print("Class name -->", classNames[cls])
 
-            # object details
-            org = [x1, y1]
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            fontScale = 1
-            color = (255, 0, 0)
-            thickness = 2
-
-            if classNames[cls] in ["bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe"]:
-                message = client.messages.create(
-                    from_='+16189613189',
-                    body=f'alert notification: {classNames[cls]} found in the farm',
-                    to='+919019101640'
-                )
-                time.sleep(60)
-
-            cv2.putText(img, classNames[cls], org, font, fontScale, color, thickness)
+            # only process if the detected object is a person
+            if cls == target_class_index:
+       
+                # bounding box
+                x1, y1, x2, y2 = box.xyxy[0]
+                x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2) # convert to int values
+    
+                # put box in cam
+                cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
+    
+                # confidence
+                confidence = math.ceil((box.conf[0]*100))/100
+                print("Confidence --->",confidence)
+    
+                # class name
+                cls = int(box.cls[0])
+                print("Class name -->", classNames[cls])
+    
+                # object details
+                org = [x1, y1]
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                fontScale = 1
+                color = (255, 0, 0)
+                thickness = 2
+    
+                cv2.putText(img, classNames[cls], org, font, fontScale, color, thickness)
 
     cv2.imshow('Webcam', img)
     if cv2.waitKey(1) == ord('q'):
