@@ -1,0 +1,19 @@
+Person Identification And Detailing
+Components Required
+* Hardware
+o  Raspberry-pi
+o  Camera
+* Software
+o Python3
+o Yolov8
+Running on the computer
+Installation
+1. git clone <link-of-repository>
+2. python -m venv venv
+3. for mac/Linux - source venv/bin/activate
+4. pip install -r requirements.txt
+Execution
+python cam.py
+Explanation
+README.md - Contains all the documentation requirements.txt - contains all the programs to be installed in the project .gitignore - used to tell GitHub which files to ignore cam.py - running a basic version of the project
+
